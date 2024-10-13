@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>画像編集ツール</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.5);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            font-weight: 600;
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #ff6b6b;
+        }
+        input[type="file"] {
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #2a2a2a;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: block;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        input[type="file"]:hover {
+            background-color: #3a3a3a;
+        }
+        canvas {
+            border: 2px solid #ff6b6b;
+            border-radius: 5px;
+            max-width: 100%;
+            margin: 20px 0;
+            display: block;
+            margin: 20px auto;
+        }
+        .color-picker-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .color-picker-container label {
+            margin-right: 10px;
+        }
+        .color-display {
+            width: 100px;
+            height: 20px; /* height を 20px に変更 */
+            border-radius: 5px;
+            border: 2px solid #fff;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .color-display:hover {
+            transform: scale(1.05);
+        }
+        #maskColor {
+            display: none;
+        }
+        #downloadButton {
+            padding: 12px 24px;
+            background-color: #4caf50;
+            border: none;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+            display: block;
+            margin: 20px auto;
+        }
+        #downloadButton:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>画像に透過マスクをかける</h1>
+        <input type="file" id="imageInput" accept="image/*" multiple>
+        <div class="color-picker-container">
+            <label for="maskColor">マスクの色:</label>
+            <div id="colorDisplay" class="color-display"></div>
+        </div>
+        <input type="color" id="maskColor" value="#ff0000">
+        <canvas id="imageCanvas"></canvas>
+        <button id="downloadButton" style="display:none;">ダウンロード</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const canvas = document.getElementById('imageCanvas');
+        const ctx = canvas.getContext('2d');
+        const downloadButton = document.getElementById('downloadButton');
+        const maskColorPicker = document.getElementById('maskColor');
+        const colorDisplay = document.getElementById('colorDisplay');
+
+        let currentImage = null; // 現在の画像を保持する変数
+        let fileNames = [];
+        let processedImages = [];
+
+        // 初期表示で選択中の色をcolorDisplayに反映
+        updateColorDisplay(maskColorPicker.value);
+
+        // colorDisplayをクリックしたときにカラーピッカーを開く
+        colorDisplay.addEventListener('click', () => {
+            maskColorPicker.click();
+        });
+
+        // カラーピッカーで色が選択されたとき、colorDisplayを更新し、画像も再描画
+        maskColorPicker.addEventListener('input', () => {
+            updateColorDisplay(maskColorPicker.value);
+            if (currentImage) {
+                drawImageWithMask(); // 色変更時に画像を再描画
+            }
+        });
+
+        imageInput.addEventListener('change', (event) => {
+            const files = event.target.files;
+            fileNames = Array.from(files).map(file => file.name);
+            processedImages = [];
+
+            if (files.length === 1) {
+                processImage(files[0]);
+            } else {
+                processImages(files);
+            }
+        });
+
+        // 画像にマスクを適用して描画する関数
+        function processImage(file) {
+            const img = new Image();
+            img.src = URL.createObjectURL(file);
+
+            img.onload = () => {
+                currentImage = img; // 選択された画像を保持
+                drawImageWithMask(); // 画像にマスクを適用
+                downloadButton.style.display = 'block'; // 画像が処理された後にダウンロードボタンを表示
+                downloadButton.onclick = () => {
+                    if (file.type === 'image/jpeg') {
+                        downloadSingleImageAsJpeg(file.name);
+                    } else {
+                        downloadSingleImageAsPng(file.name);
+                    }
+                };
+            };
+        }
+
+        // 色変更後、画像を再描画する関数
+        function drawImageWithMask() {
+            canvas.width = currentImage.width;
+            canvas.height = currentImage.height;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(currentImage, 0, 0);
+
+            const maskColor = hexToRgb(maskColorPicker.value);
+            applyMask(maskColor); // マスクを再適用
+        }
+
+        // 複数画像を処理する場合
+        function processImages(files) {
+            Array.from(files).forEach((file, index) => {
+                const img = new Image();
+                img.src = URL.createObjectURL(file);
+
+                img.onload = () => {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+
+                    const maskColor = hexToRgb(maskColorPicker.value);
+                    applyMask(maskColor);
+
+                    canvas.toBlob(blob => {
+                        processedImages.push({ blob, name: file.name });
+
+                        if (processedImages.length === files.length) {
+                            downloadButton.style.display = 'block';
+                            downloadButton.onclick = () => {
+                                downloadZip();
+                            };
+                        }
+                    });
+                };
+            });
+        }
+
+        // マスクを適用する関数
+        function applyMask(maskColor) {
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+
+            for (let i = 0; i < data.length; i += 4) {
+                const alpha = data[i + 3]; // アルファ値
+
+                if (alpha !== 0) { // 透明なピクセルはスキップ
+                    data[i] = maskColor.r * 0.5 + data[i] * 0.5;
+                    data[i + 1] = maskColor.g * 0.5 + data[i + 1] * 0.5;
+                    data[i + 2] = maskColor.b * 0.5 + data[i + 2] * 0.5;
+                }
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        // 16進数カラーコードをRGBに変換する関数
+        function hexToRgb(hex) {
+            const bigint = parseInt(hex.slice(1), 16);
+            return {
+                r: (bigint >> 16) & 255,
+                g: (bigint >> 8) & 255,
+                b: bigint & 255
+            };
+        }
+
+        // カラーピッカーで選択した色を表示する
+        function updateColorDisplay(color) {
+            colorDisplay.style.backgroundColor = color;
+        }
+
+        // PNG画像をダウンロードする
+        function downloadSingleImageAsPng(fileName) {
+            canvas.toBlob(blob => {
+                saveAs(blob, fileName);
+            });
+        }
+
+        // JPEG画像をダウンロードする
+        function downloadSingleImageAsJpeg(fileName) {
+            canvas.toBlob(blob => {
+                saveAs(blob, fileName);
+            }, 'image/jpeg', 0.8); // 圧縮率80%でJPEG形式で保存
+        }
+
+        // ZIPで複数の画像をまとめてダウンロードする
+        function downloadZip() {
+            const zip = new JSZip();
+            processedImages.forEach(image => {
+                zip.file(image.name, image.blob);
+            });
+
+            zip.generateAsync({ type: 'blob' }).then(content => {
+                saveAs(content, 'images.zip');
+            });
+        }
+    </script>
+</body>
+</html>
