@@ -1,1 +1,88 @@
-test
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>画像編集ツール</title>
+	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			font-family: 'Poppins', sans-serif;
+			background-color: #121212;
+			color: #ffffff;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 100vh;
+		}
+		.container {
+			text-align: center;
+			padding: 20px;
+			background-color: #1e1e1e;
+			border-radius: 10px;
+			box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.5);
+			max-width: 600px;
+			width: 100%;
+		}
+		h1 {
+			font-weight: 600;
+			font-size: 24px;
+			margin-bottom: 20px;
+			color: #ff6b6b;
+		}
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, 200px); /* 各列の幅を200pxに固定 */
+            grid-auto-rows: 250px;
+            justify-content: start; /* 左上揃え */
+            gap: 0; /* スペースを開けない */
+        }
+
+        .grid-item {
+            border: 1px solid #4b4b4b;
+            box-sizing: border-box;
+            text-align: center;
+			padding: 15px 0;
+			text-decoration:none;
+        }
+
+		.grid-item .inner {
+			transition: transform 0.3s ease, background-color 0.3s ease;
+		}
+		.grid-item .inner:hover {
+			transform: scale(1.05);
+		}
+
+		.grid-item img {
+			width: 180px;
+			
+		}
+		.grid-item span { 
+			line-height: 40px;
+			color: #fff;
+			
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h1>便利ツール</h1>
+		<div class="grid-container">
+			<a href="./tools/image_dummy_mask.html" class="grid-item">
+				<div class="inner">
+					<img src="./images/dummy_image.png">
+					<span>画像ダミー化</span>
+				</div>
+			</a>
+			<a href="./tools/image_dummy_mask.html" class="grid-item">
+				<div class="inner">
+					<img src="./images/sample.png">
+					<span>一括カラム追加</span>
+				</div>
+			</a>
+		</div>
+	</div>
+</body>
+</html>
