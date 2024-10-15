@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一括カラム追加</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e;
+            color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            color: #f4f4f4;
+            margin-bottom: 20px;
+        }
+        h2 {
+            text-align: left;
+            font-size: 20px;
+            color: #f4f4f4;
+        }
+        .container {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .step {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="file"], input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #666;
+            border-radius: 4px;
+            background-color: #444;
+            color: #f4f4f4;
+            box-sizing: border-box; /* ここに追加 */
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .hidden {
+            display: none;
+        }
+        .extra-margin {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>一括カラム追加</h1>
+
+<div class="container">
+    <div class="step">
+        <h2>【ステップ1】ファイル選択</h2>
+        <input type="file" id="fileInput" multiple>
+        <button id="step1NextBtn" class="hidden">次へ</button>
+    </div>
+
+    <div class="step hidden" id="step2">
+        <h2>【ステップ2】何列目にカラムを追加するかを入力</h2>
+        <input type="number" id="columnNumberInput" placeholder="未入力の場合は最後のカラムの後ろに追加されます">
+        <button id="step2NextBtn">次へ</button>
+    </div>
+
+    <div class="step hidden" id="step3">
+        <h2>【ステップ3】固定値を設定する行数を入力</h2>
+        <label for="rowCountInput">固定値を設定する行数</label>
+        <input type="number" id="rowCountInput" min="1" placeholder="行数を入力">
+        <button id="generateFieldsBtn">決定</button>
+        <div id="fixedValueFields" class="extra-margin"></div>
+        <button id="step3NextBtn" class="hidden">次へ</button>
+    </div>
+
+    <div class="step hidden" id="step4">
+        <h2>【ステップ4】デフォルト値の設定</h2>
+        <label for="defaultValueInput">デフォルト値</label>
+        <input type="text" id="defaultValueInput" placeholder="デフォルト値を入力">
+        <button id="executeBtn">カラム追加処理を実行</button>
+    </div>
+
+    <div class="step hidden" id="downloadStep">
+        <h2>【ステップ5】処理済みファイルのダウンロード</h2>
+        <a href="#" id="downloadLink" download>
+            <button>処理済みファイルをダウンロード</button>
+        </a>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
+<script>
+    let selectedFiles = [];
+
+    document.getElementById('fileInput').addEventListener('change', function() {
+        selectedFiles = Array.from(this.files);
+        if (selectedFiles.length > 0) {
+            document.getElementById('step1NextBtn').classList.remove('hidden');
+        }
+    });
+
+    document.getElementById('step1NextBtn').addEventListener('click', function() {
+        document.getElementById('step2').classList.remove('hidden');
+        window.scrollTo(0, document.body.scrollHeight);
+    });
+
+    document.getElementById('step2NextBtn').addEventListener('click', function() {
+        document.getElementById('step3').classList.remove('hidden');
+        window.scrollTo(0, document.body.scrollHeight);
+    });
+
+    document.getElementById('generateFieldsBtn').addEventListener('click', function() {
+        var rowCount = parseInt(document.getElementById('rowCountInput').value, 10);
+        var fixedValueFields = document.getElementById('fixedValueFields');
+        fixedValueFields.innerHTML = '';
+
+        for (var i = 1; i <= rowCount; i++) {
+            var input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = i + '行目の値';
+            input.addEventListener('input', checkInputFields);
+            fixedValueFields.appendChild(input);
+        }
+    });
+
+    function checkInputFields() {
+        var inputs = document.querySelectorAll('#fixedValueFields input');
+        var allFilled = true;
+        inputs.forEach(function(input) {
+            if (input.value.trim() === '') {
+                allFilled = false;
+            }
+        });
+        if (allFilled) {
+            document.getElementById('step3NextBtn').classList.remove('hidden');
+        } else {
+            document.getElementById('step3NextBtn').classList.add('hidden');
+        }
+    }
+
+    document.getElementById('step3NextBtn').addEventListener('click', function() {
+        document.getElementById('step4').classList.remove('hidden');
+        window.scrollTo(0, document.body.scrollHeight);
+    });
+
+    document.getElementById('executeBtn').addEventListener('click', function() {
+        if (selectedFiles.length > 0) {
+            var columnNumber = document.getElementById('columnNumberInput').value || 'last';
+            var defaultValue = document.getElementById('defaultValueInput').value;
+            var rowCount = document.getElementById('rowCountInput').value;
+
+            var zip = new JSZip();
+            var completedFiles = 0;
+
+            selectedFiles.forEach(file => {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var fileContent = e.target.result;
+
+                    // 区切り文字をCSVとTSVで判定
+                    var delimiter = file.name.endsWith('.csv') ? ',' : '\t';
+
+                    // ファイル内容を処理し、行ごとにカラムを追加
+                    var lines = fileContent.split('\n');
+                    var processedLines = lines.map((line, index) => {
+                        // 空行でないことを確認
+                        if (line.trim() === '') {
+                            return line; // 空行の場合はそのまま返す
+                        }
+                        var columns = line.split(delimiter);
+                        var newColumnValue = index < rowCount ? document.querySelectorAll('#fixedValueFields input')[index].value : defaultValue;
+                        if (columnNumber === 'last') {
+                            columns.push(newColumnValue);
+                        } else {
+                            columns.splice(columnNumber - 1, 0, newColumnValue);
+                        }
+                        return columns.join(delimiter);
+                    });
+
+                    // ZIPファイルに処理済みファイルを追加
+                    zip.file(file.name, processedLines.join('\n'));
+
+                    completedFiles++;
+                    if (completedFiles === selectedFiles.length) {
+                        // 全てのファイルが完了したらZIPファイルを生成し、ダウンロードリンクを設定
+                        zip.generateAsync({ type: "blob" }).then(function(content) {
+                            var link = document.getElementById('downloadLink');
+                            link.href = URL.createObjectURL(content);
+                            link.download = 'processed_files.zip';  // ZIPファイル名
+                            document.getElementById('downloadStep').classList.remove('hidden');
+                            window.scrollTo(0, document.body.scrollHeight);
+                        });
+                    }
+                };
+                reader.readAsText(file);
+            });
+        }
+    });
+</script>
+
+</body>
+</html>
