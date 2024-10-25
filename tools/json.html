@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON整形ツール</title>
+    <style>
+        body {
+            background-color: #222;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            width: 80%;
+            max-width: 600px;
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #444;
+            border-radius: 5px;
+            background-color: #fff;
+            color: #000;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        /* 「整形後のJSONをコピーする」ボタンには margin-bottom を適用しない */
+        .copy-btn {
+            margin-bottom: 0;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        textarea {
+            flex-grow: 1;
+            padding-left: 10px;
+            resize: none;
+            overflow-y: scroll;
+            white-space: pre-wrap;
+            box-sizing: border-box;
+        }
+
+        .ad-left {
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(-640px, -50%);
+		}
+		.ad-right {
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(340px, -50%);
+		}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <input type="text" id="jsonInput" placeholder="JSON文字列をここに貼り付けてください">
+        <button onclick="formatJSON()">整形する</button>
+        <textarea id="jsonOutput" placeholder="整形されたJSONがここに表示されます" readonly></textarea>
+        <button class="copy-btn" onclick="copyToClipboard()">整形後のJSONをコピーする</button>
+    </div>
+
+    <script>
+        function formatJSON() {
+            const input = document.getElementById('jsonInput').value;
+            const output = document.getElementById('jsonOutput');
+            
+            try {
+                const json = JSON.parse(input);
+                output.value = JSON.stringify(json, null, 4);
+            } catch (error) {
+                output.value = '無効なJSONです: ' + error.message;
+            }
+        }
+
+        function copyToClipboard() {
+            const output = document.getElementById('jsonOutput');
+            output.select();
+            output.setSelectionRange(0, 99999); // モバイル対応のため
+            document.execCommand("copy");
+            alert("整形後のJSONがクリップボードにコピーされました");
+        }
+    </script>
+
+    <div class="ad-left">
+        <script type="text/javascript">
+            //パラメーター設定
+            var _adf_global = {base: {}};
+            _adf_global.base.ad_id = "670f0815ed0228630e560efa";
+            _adf_global.base.iframe_width = 300; //iframeの幅
+            _adf_global.base.iframe_height = 250; //iframeの高さ
+            _adf_global.base.reload_span_sec = 30; //リフレッシュ間隔(30～120秒)
+            _adf_global.base.disable_reload = false; //リフレッシュさせたくない時に設定するフラグ
+            _adf_global.base.iframe_style_cssText = "border:none;margin:0 auto;display:block;padding:0;";//iframeのカスタムcss
+        </script>
+        <script type="text/javascript" src="//d1bqhgjuxdf1ml.cloudfront.net/js/adf_global_base_v1.2.min.js"  charset="UTF-8"></script>
+    </div>
+    <div class="ad-right">
+        <script type="text/javascript">
+            //パラメーター設定
+            var _adf_global = {base: {}};
+            _adf_global.base.ad_id = "670f0815ed0228630e560efa";
+            _adf_global.base.iframe_width = 300; //iframeの幅
+            _adf_global.base.iframe_height = 250; //iframeの高さ
+            _adf_global.base.reload_span_sec = 30; //リフレッシュ間隔(30～120秒)
+            _adf_global.base.disable_reload = false; //リフレッシュさせたくない時に設定するフラグ
+            _adf_global.base.iframe_style_cssText = "border:none;margin:0 auto;display:block;padding:0;";//iframeのカスタムcss
+        </script>
+        <script type="text/javascript" src="//d1bqhgjuxdf1ml.cloudfront.net/js/adf_global_base_v1.2.min.js"  charset="UTF-8"></script>
+    </div>
+</body>
+</html>
