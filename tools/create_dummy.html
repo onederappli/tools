@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ダミーファイル大量生成</title>
+    <style>
+        body {
+            background-color: #111;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #222;
+            padding: 20px;
+            border-radius: 10px;
+            width: 600px;
+        }
+        h1 {
+            text-align: center;
+            color: #ff5555;
+        }
+        .step {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"], input[type="number"], input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            background-color: #333;
+            border: 1px solid #444;
+            color: white;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #33cc33;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #28a745;
+        }
+        .ad-left {
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(-640px, -50%);
+		}
+		.ad-right {
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(340px, -50%);
+		}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ダミーファイル大量生成</h1>
+
+        <div class="step">
+            <label for="file">【ステップ1】複製元ファイル選択</label>
+            <input type="file" id="file">
+        </div>
+
+        <div class="step">
+            <label for="fileNameRule">【ステップ2】複製ファイル命名規則</label>
+            <input type="text" id="fileNameRule" placeholder="file_name_{0} (※{0}と入力した箇所が連番になります ※拡張子は入力不要です)">
+        </div>
+
+        <div class="step">
+            <label for="zeroPadding">【ステップ3】0埋め設定</label>
+            <input type="number" id="zeroPadding" placeholder="0埋めする桁数（未入力の場合0埋めしません）">
+        </div>
+
+        <div class="step">
+            <label for="startNumber">【ステップ4】連番指定</label>
+            <input type="number" id="startNumber" placeholder="始まりの番号">
+            <input type="number" id="endNumber" placeholder="終わりの番号">
+        </div>
+
+        <div class="step">
+            <label for="generateBtn">【ステップ5】生成してダウンロード</label>
+            <button id="generateBtn">生成してダウンロード</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <script>
+        document.getElementById('generateBtn').addEventListener('click', function() {
+            const fileInput = document.getElementById('file');
+            const fileNameRule = document.getElementById('fileNameRule').value;
+            const zeroPadding = document.getElementById('zeroPadding').value;
+            const startNumber = parseInt(document.getElementById('startNumber').value);
+            const endNumber = parseInt(document.getElementById('endNumber').value);
+
+            if (!fileInput.files.length || !fileNameRule || isNaN(startNumber) || isNaN(endNumber)) {
+                alert('すべてのフィールドを正しく入力してください');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const fileExtension = file.name.split('.').pop(); // ファイルの拡張子を取得
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const fileData = event.target.result;
+                const zip = new JSZip();
+
+                for (let i = startNumber; i <= endNumber; i++) {
+                    let numberStr = i.toString();
+                    if (zeroPadding) {
+                        numberStr = numberStr.padStart(zeroPadding, '0');
+                    }
+
+                    // 拡張子付きのファイル名を生成
+                    const fileName = fileNameRule.replace('{0}', numberStr) + '.' + fileExtension;
+                    zip.file(fileName, fileData);
+                }
+
+                zip.generateAsync({ type: 'blob' }).then(function(content) {
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(content);
+                    link.download = 'generated_files.zip';
+                    link.click();
+                });
+            };
+            reader.readAsArrayBuffer(file);
+        });
+    </script>
+
+	<div class="ad-left">
+		<script type="text/javascript">
+			//パラメーター設定
+			var _adf_global = {base: {}};
+			_adf_global.base.ad_id = "670f0815ed0228630e560efa";
+			_adf_global.base.iframe_width = 300; //iframeの幅
+			_adf_global.base.iframe_height = 250; //iframeの高さ
+			_adf_global.base.reload_span_sec = 30; //リフレッシュ間隔(30～120秒)
+			_adf_global.base.disable_reload = false; //リフレッシュさせたくない時に設定するフラグ
+			_adf_global.base.iframe_style_cssText = "border:none;margin:0 auto;display:block;padding:0;";//iframeのカスタムcss
+		</script>
+		<script type="text/javascript" src="//d1bqhgjuxdf1ml.cloudfront.net/js/adf_global_base_v1.2.min.js"  charset="UTF-8"></script>
+	</div>
+	<div class="ad-right">
+		<script type="text/javascript">
+			//パラメーター設定
+			var _adf_global = {base: {}};
+			_adf_global.base.ad_id = "670f0815ed0228630e560efa";
+			_adf_global.base.iframe_width = 300; //iframeの幅
+			_adf_global.base.iframe_height = 250; //iframeの高さ
+			_adf_global.base.reload_span_sec = 30; //リフレッシュ間隔(30～120秒)
+			_adf_global.base.disable_reload = false; //リフレッシュさせたくない時に設定するフラグ
+			_adf_global.base.iframe_style_cssText = "border:none;margin:0 auto;display:block;padding:0;";//iframeのカスタムcss
+		</script>
+		<script type="text/javascript" src="//d1bqhgjuxdf1ml.cloudfront.net/js/adf_global_base_v1.2.min.js"  charset="UTF-8"></script>
+	</div>
+</body>
+</html>
