@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MP3音量調整ツール</title>
+    <style>
+        /* --- デザイン設定 --- */
+        body {
+            background-color: #0f172a; color: #e2e8f0; font-family: sans-serif;
+            display: flex; flex-direction: column; align-items: center; margin-top: 40px;
+        }
+        
+        /* タイトルのスタイル */
+        h1 {
+            color: #ffffff;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            letter-spacing: 0.05em;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .editor-container {
+            width: 800px; background-color: #1e293b; padding: 20px;
+            border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .header-controls {
+            display: flex; justify-content: space-between; align-items: flex-end;
+            margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #334155;
+        }
+        .input-group label {
+            display: block; font-size: 0.85rem; color: #94a3b8; margin-bottom: 5px;
+        }
+        
+
+
+        /* --- 波形エリア (高さ450px) --- */
+        .waveform-box {
+            position: relative; width: 100%; 
+            height: 450px;
+            background-color: #172554; border-radius: 4px; margin-bottom: 10px;
+            overflow: hidden; border: 1px solid #334155;
+        }
+        #waveform { width: 100%; height: 100%; transform-origin: center; transition: transform 0.2s ease-out; }
+        #y-axis { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
+        
+        .time-display {
+            font-family: monospace; background-color: rgba(0,0,0,0.6);
+            padding: 4px 8px; border-radius: 4px; position: absolute; top: 10px; right: 10px;
+            z-index: 20; font-size: 14px; pointer-events: none;
+        }
+
+        /* --- コントロールバー --- */
+        .controls-bar {
+            display: flex; align-items: center; gap: 15px;
+            background-color: #334155; padding: 10px 20px; border-radius: 8px; margin-top: 10px;
+        }
+        button { cursor: pointer; border: none; border-radius: 4px; padding: 8px 16px; font-weight: bold; }
+        .btn-play { background-color: #3b82f6; color: white; width: 80px;}
+        .btn-play:hover { background-color: #2563eb; }
+        .btn-save { background-color: #fff; color: #000; margin-left: auto; }
+        .btn-save:hover { background-color: #eee; }
+        .btn-save:disabled { background-color: #666; color: #888; }
+
+        .volume-group { display: flex; align-items: center; gap: 10px; flex-grow: 1; }
+        input[type=range] { flex-grow: 1; cursor: pointer; }
+        .vol-label { width: 60px; text-align: right; font-family: monospace; color: #94a3b8; }
+
+        #statusMessage { margin-top: 5px; font-size: 0.8rem; color: #fbbf24; text-align: center; height: 20px; }
+    </style>
+    <script src="coi-serviceworker.js"></script>
+</head>
+<body>
+
+    <h1>MP3音量調整ツール</h1>
+
+    <div class="editor-container">
+        <div class="header-controls">
+            <div class="input-group">
+                <label>1. 音源ファイルを選択</label>
+                <input type="file" id="fileInput" accept=".mp3,audio/mpeg" style="color:#94a3b8;">
+            </div>
+        </div>
+
+        <div class="waveform-box">
+            <canvas id="y-axis"></canvas>
+            <div id="waveform"></div>
+            <div class="time-display" id="timeDisplay">00:00.0</div>
+        </div>
+
+        <div class="controls-bar">
+            <button id="playBtn" class="btn-play">PLAY</button>
+
+            <div class="volume-group">
+                <span style="font-size:0.8rem;">Volume</span>
+                <input type="range" id="volumeSlider" min="-30" max="30" value="0" step="0.1">
+                <span class="vol-label" id="volValue">0.0 dB</span>
+            </div>
+
+            <button id="convertButton" class="btn-save">保存</button>
+        </div>
+        
+        <div id="statusMessage"></div>
+        <div id="progress" style="display:none; height:2px; background:#3b82f6; width:0%; margin-top:5px; transition: width 0.2s;"></div>
+    </div>
+
+    <script src="https://unpkg.com/wavesurfer.js@7"></script>
+    <script src="ffmpeg.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

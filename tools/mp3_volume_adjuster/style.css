@@ -1,0 +1,91 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6;
+    background-color: #f4f7f6;
+    color: #333;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding-bottom: 20px;
+}
+.container {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    padding: 25px 30px;
+    width: 90%;
+    max-width: 700px;
+    clear: both;       /* float があれば下に回す */
+    display: block;
+    margin: 0 auto;
+}
+h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin-top: 0;
+    display: block;
+    width: 100%;
+    margin: 0 0 12px 0; /* 必要に応じて調整 */
+}
+input[type="file"] {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    background-color: #fafafa;
+}
+button {
+    background-color: #007bff;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 100%;
+    transition: background-color 0.3s ease;
+}
+button:hover {
+    background-color: #0056b3;
+}
+button:disabled {
+    background-color: #aaa;
+    cursor: not-allowed;
+}
+#status {
+    margin-top: 20px;
+    background: #fdfdfd;
+    border: 1px solid #eee;
+    padding: 15px;
+    border-radius: 8px;
+}
+#logOutput {
+    background: #222;
+    color: #0f0; /* 緑色のテキスト */
+    font-family: "Courier New", Courier, monospace;
+    font-size: 13px;
+    padding: 10px;
+    border-radius: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none; /* デフォルトでは非表示 */
+    white-space: pre-wrap; /* 改行を保持 */
+    word-break: break-all;
+}
+#progress {
+    width: 100%;
+    margin-top: 10px;
+}
+#progressBar {
+    width: 100%;
+    height: 10px;
+}
+#outputVideo {
+    width: 100%;
+    max-width: 700px;
+    margin-top: 15px;
+    border-radius: 8px;
+}
